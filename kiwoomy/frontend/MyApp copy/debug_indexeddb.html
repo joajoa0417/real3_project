@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndexedDB 데이터 확인</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .data-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ IndexedDB 데이터 확인 도구</h1>
+        
+        <div class="controls">
+            <button onclick="checkDatabase()">데이터베이스 상태 확인</button>
+            <button onclick="loadAllUsers()">모든 사용자 조회</button>
+            <button onclick="loadAllStocks()">모든 보유종목 조회</button>
+            <button onclick="loadAllTrades()">모든 거래내역 조회</button>
+            <button onclick="clearAllData()">모든 데이터 삭제</button>
+        </div>
+
+        <div id="status" class="data-section">
+            <h2>📊 데이터베이스 상태</h2>
+            <pre id="statusContent">버튼을 클릭하여 데이터를 확인하세요.</pre>
+        </div>
+
+        <div id="users" class="data-section">
+            <h2>👥 사용자 데이터</h2>
+            <pre id="usersContent">사용자 데이터가 여기에 표시됩니다.</pre>
+        </div>
+
+        <div id="stocks" class="data-section">
+            <h2>📈 보유종목 데이터</h2>
+            <pre id="stocksContent">보유종목 데이터가 여기에 표시됩니다.</pre>
+        </div>
+
+        <div id="trades" class="data-section">
+            <h2>💱 거래내역 데이터</h2>
+            <pre id="tradesContent">거래내역 데이터가 여기에 표시됩니다.</pre>
+        </div>
+    </div>
+
+    <script>
+        const DB_NAME = 'KiwoomyDB';
+        const DB_VERSION = 1;
+        let db = null;
+
+        // 데이터베이스 열기
+        async function openDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+            });
+        }
+
+        // 데이터베이스 상태 확인
+        async function checkDatabase() {
+            try {
+                await openDatabase();
+                const objectStores = Array.from(db.objectStoreNames);
+                
+                const status = {
+                    database: DB_NAME,
+                    version: db.version,
+                    objectStores: objectStores,
+                    connected: true,
+                    timestamp: new Date().toLocaleString()
+                };
+                
+                document.getElementById('statusContent').textContent = JSON.stringify(status, null, 2);
+            } catch (error) {
+                document.getElementById('statusContent').innerHTML = 
+                    `<div class="error">오류: ${error.message}</div>`;
+            }
+        }
+
+        // 모든 사용자 조회
+        async function loadAllUsers() {
+            try {
+                if (!db) await openDatabase();
+                
+                const transaction = db.transaction(['users'], 'readonly');
+                const store = transaction.objectStore('users');
+                const request = store.getAll();
+                
+                request.onsuccess = () => {
+                    const users = request.result;
+                    document.getElementById('usersContent').textContent = 
+                        JSON.stringify(users, null, 2);
+                };
+                
+                request.onerror = () => {
+                    document.getElementById('usersContent').innerHTML = 
+                        `<div class="error">사용자 데이터 조회 실패: ${request.error}</div>`;
+                };
+            } catch (error) {
+                document.getElementById('usersContent').innerHTML = 
+                    `<div class="error">오류: ${error.message}</div>`;
+            }
+        }
+
+        // 모든 보유종목 조회
+        async function loadAllStocks() {
+            try {
+                if (!db) await openDatabase();
+                
+                const transaction = db.transaction(['userStocks'], 'readonly');
+                const store = transaction.objectStore('userStocks');
+                const request = store.getAll();
+                
+                request.onsuccess = () => {
+                    const stocks = request.result;
+                    document.getElementById('stocksContent').textContent = 
+                        JSON.stringify(stocks, null, 2);
+                };
+                
+                request.onerror = () => {
+                    document.getElementById('stocksContent').innerHTML = 
+                        `<div class="error">보유종목 데이터 조회 실패: ${request.error}</div>`;
+                };
+            } catch (error) {
+                document.getElementById('stocksContent').innerHTML = 
+                    `<div class="error">오류: ${error.message}</div>`;
+            }
+        }
+
+        // 모든 거래내역 조회
+        async function loadAllTrades() {
+            try {
+                if (!db) await openDatabase();
+                
+                const transaction = db.transaction(['tradeHistory'], 'readonly');
+                const store = transaction.objectStore('tradeHistory');
+                const request = store.getAll();
+                
+                request.onsuccess = () => {
+                    const trades = request.result;
+                    document.getElementById('tradesContent').textContent = 
+                        JSON.stringify(trades, null, 2);
+                };
+                
+                request.onerror = () => {
+                    document.getElementById('tradesContent').innerHTML = 
+                        `<div class="error">거래내역 데이터 조회 실패: ${request.error}</div>`;
+                };
+            } catch (error) {
+                document.getElementById('tradesContent').innerHTML = 
+                    `<div class="error">오류: ${error.message}</div>`;
+            }
+        }
+
+        // 모든 데이터 삭제
+        async function clearAllData() {
+            if (!confirm('정말로 모든 데이터를 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            try {
+                if (db) {
+                    db.close();
+                }
+                
+                const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
+                
+                deleteRequest.onsuccess = () => {
+                    alert('데이터베이스가 삭제되었습니다.');
+                    location.reload();
+                };
+                
+                deleteRequest.onerror = () => {
+                    alert('데이터베이스 삭제 실패');
+                };
+            } catch (error) {
+                alert(`오류: ${error.message}`);
+            }
+        }
+
+        // 페이지 로드 시 자동으로 상태 확인
+        window.addEventListener('load', checkDatabase);
+    </script>
+</body>
+</html> 

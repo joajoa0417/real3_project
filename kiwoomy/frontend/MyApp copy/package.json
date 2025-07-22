@@ -1,0 +1,35 @@
+{
+  "name": "myapp-copy",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "^3.1.3",
+    "@expo/vector-icons": "^14.1.0",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/datetimepicker": "^8.4.1",
+    "expo": "~53.0.17",
+    "expo-linear-gradient": "~14.1.5",
+    "expo-sqlite": "^15.2.14",
+    "expo-status-bar": "~2.2.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-native": "0.79.5",
+    "react-native-chart-kit": "^6.12.0",
+    "react-native-safe-area-context": "^5.5.2",
+    "react-native-svg": "15.11.2",
+    "react-native-web": "^0.19.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@types/react": "~19.0.10",
+    "@types/react-native": "^0.72.8",
+    "typescript": "~5.8.3"
+  },
+  "private": true
+}
